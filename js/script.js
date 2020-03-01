@@ -22,6 +22,7 @@ var menuItemsUrl =
   "https://davids-restaurant.herokuapp.com/menu_items.json?category=";
 var menuItemsTitleHtml = "snippets/menu-items-title.html";
 var menuItemHtml = "snippets/menu-item.html";
+var aboutHtmlUrl = "snippets/about.html";
 
 // Convenience function for inserting innerHTML for 'select'
 var insertHtml = function (selector, html) {
@@ -42,6 +43,15 @@ var insertProperty = function (string, propName, propValue) {
   var propToReplace = "{{" + propName + "}}";
   string = string
     .replace(new RegExp(propToReplace, "g"), propValue);
+  return string;
+};
+
+var insertPropertyByNumber = function (string, propName, propValue, n) {
+  var propToReplace = "{{" + propName + "}}";
+  for (var i=0; i<n; i++){
+  string = string
+    .replace(new RegExp(propToReplace), propValue);
+  }
   return string;
 };
 
@@ -85,14 +95,15 @@ function buildAndShowHomeHTML (categories) {
 
       // STEP 3
       var homeHtmlToInsertIntoMainPage = insertProperty(homeHtml, "randomCategoryShortName", "'" + chosenCategoryShortName +"'");
-
-
+     
       // STEP 4
       insertHtml("#main-content", homeHtmlToInsertIntoMainPage);
 
     },
     false); // False here because we are getting just regular HTML from the server, so no need to process JSON.
 }
+
+
 
 
 // Given array of category objects, returns a random category object.
@@ -112,6 +123,24 @@ dc.loadMenuCategories = function () {
     allCategoriesUrl,
     buildAndShowCategoriesHTML);
 };
+
+dc.loadRatings = function(){
+  showLoading("#main-content");
+  $ajaxUtils.sendGetRequest(
+    aboutHtmlUrl,
+    buildAndShowAboutHTML, false
+    )
+}
+
+function buildAndShowAboutHTML(aboutHtml){
+  var rating = getRandomRating();
+  var aboutHtmlToInsertIntoMainPage = insertProperty(aboutHtml, "rating", rating);
+  aboutHtmlToInsertIntoMainPage = insertPropertyByNumber(aboutHtmlToInsertIntoMainPage, "ratingClass", "fas fa-star", rating);
+  aboutHtmlToInsertIntoMainPage = insertPropertyByNumber(aboutHtmlToInsertIntoMainPage, "ratingClass", "far fa-star", 5-rating);
+  insertHtml("#main-content", aboutHtmlToInsertIntoMainPage);
+}
+
+
 
 
 // Load the menu items view
@@ -177,7 +206,6 @@ function buildCategoriesViewHtml(categories,
   finalHtml += "</section>";
   return finalHtml;
 }
-
 
 
 // Builds HTML for the single category page based on the data
@@ -302,6 +330,11 @@ function insertItemPortionName(html,
   portionValue = "(" + portionValue + ")";
   html = insertProperty(html, portionPropName, portionValue);
   return html;
+}
+
+function getRandomRating(){
+  var rating = Math.floor(Math.random()*5)+1;
+  return rating
 }
 
 
